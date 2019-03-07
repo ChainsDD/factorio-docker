@@ -16,6 +16,9 @@ create() {
 }
 
 case "$1" in
+    create)
+	create $2
+	;;
     start)
         docker container start factorio
         ;;
@@ -36,7 +39,7 @@ case "$1" in
 	    exit 1
 	fi
 	TAG="--tag chainsdd/factorio:$2"
-	if [ "$3" == "true"  ]; then
+	if [ "$3" = "true"  ]; then
 	    TAG="$TAG --tag chainsdd/factorio:latest"
 	fi
 	DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -49,12 +52,17 @@ case "$1" in
 	docker exec factorio chown 845:845 /factorio/$3
         ;;
     shell)
-        docker exec factorio /bin/sh
+        docker exec -it factorio /bin/sh
         ;;
     config)
+	if [ "$2" = "rconpw" ]; then
+	    FILENAME="$2"
+	else
+	    FILENAME="server-$2.json"
+	fi
 	docker run -it --rm \
 	    --mount source=factorio,target=/factorio \
 	    busybox \
-	    vi /factorio/config/$2.json
+	    vi /factorio/config/$FILENAME
 	;;
 esac
