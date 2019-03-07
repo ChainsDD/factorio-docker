@@ -46,3 +46,6 @@ The bin/factorio script has other functions to help manage the server.
 #   * rconpw (the password used for the RCON connection)
 # You can specify any filename, but only the ones listed will have any effect.
 ```
+
+## Building your own base image
+If you're unsure about using an unofficial base image, I have created another image that you can build from source to use as the base image. Download and build [docker-alpine-glibc](https://github.com/ChainsDD/docker-alpine-glibc), then change the FROM line in the Dockerfile to reference your newly built base image.
