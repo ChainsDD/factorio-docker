@@ -1,0 +1,60 @@
+#!/bin/bash
+
+create() {
+    if [ -z ${1+x} ]; then
+	VERSION=latest
+    else
+	VERSION="$1"
+    fi
+    docker run -d \
+        -p 34197:34197/udp \
+        -p 27015:27015/tcp \
+        --mount source=factorio,target=/factorio \
+        --name factorio \
+        --restart=always \
+        chainsdd/factorio:$VERSION
+}
+
+case "$1" in
+    start)
+        docker container start factorio
+        ;;
+    stop)
+        docker container stop factorio
+        ;;
+    restart)
+        docker container restart factorio
+        ;;
+    setver)
+        docker container stop factorio
+        docker container rm factorio
+        create $2
+        ;;
+    build)
+	if [ -z ${2+x} ]; then
+	    echo "You must specify a version number"
+	    exit 1
+	fi
+	TAG="--tag chainsdd/factorio:$2"
+	if [ "$3" == "true"  ]; then
+	    TAG="$TAG --tag chainsdd/factorio:latest"
+	fi
+	DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+	echo $DIR
+	echo $TAG
+	docker build $TAG --build-arg VERSION=$2 $DIR/..
+	;;
+    cp)
+        docker cp $2 factorio:/factorio/$3
+	docker exec factorio chown 845:845 /factorio/$3
+        ;;
+    shell)
+        docker exec factorio /bin/sh
+        ;;
+    config)
+	docker run -it --rm \
+	    --mount source=factorio,target=/factorio \
+	    busybox \
+	    vi /factorio/config/$2.json
+	;;
+esac
